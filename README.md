@@ -11,12 +11,12 @@ repo — the Grafana UI is **not** the source of truth.
                 │  ┌──────────┐  ┌──────┐  ┌──────────┐       │
                 │  │Prometheus│──│ Loki │  │ Grafana  │       │
                 │  └─────┬────┘  └──┬───┘  └──────┬───┘       │
-                │        │          │             │            │
-                │        ├──── node_exporter (host net)         │
-                │        ├──── blackbox_exporter                │
-                │        ├──── unraid_api plugin                │
-                │        │   Promtail (Docker socket → Loki)    │
-                └────────┼─────────────────────────────────────┘
+                │        │          │             │           │
+                │        ├──── node_exporter (host net)       │
+                │        ├──── blackbox_exporter              │
+                │        ├──── unraid_api plugin              │
+                │        │   Promtail (Docker socket → Loki)  │
+                └────────┼────────────────────────────────────┘
                          │
             ┌────────────┴───────────────┐
             │                            │
@@ -162,28 +162,28 @@ docker compose up -d grafana    # picks up the new env var
 
 Defined in `grafana/provisioning/alerting/rules.yml`:
 
-| UID                            | Fires when                                                                  |
-|--------------------------------|------------------------------------------------------------------------------|
-| `alert-blackbox-probe-failed`  | `probe_success == 0` for > 2 minutes                                         |
-| `alert-cert-expiring-soon`     | TLS cert expires in < 14 days                                                |
-| `alert-node-down`              | `up{job="node"} == 0` for > 2 minutes                                        |
-| `alert-disk-usage-high`        | filesystem > 85% full for > 10 minutes                                       |
-| `alert-unraid-disk-temp-high`  | any array disk over 45 °C for > 10 minutes                                    |
+| UID                           | Fires when                                 |
+| ----------------------------- | ------------------------------------------ |
+| `alert-blackbox-probe-failed` | `probe_success == 0` for > 2 minutes       |
+| `alert-cert-expiring-soon`    | TLS cert expires in < 14 days              |
+| `alert-node-down`             | `up{job="node"} == 0` for > 2 minutes      |
+| `alert-disk-usage-high`       | filesystem > 85% full for > 10 minutes     |
+| `alert-unraid-disk-temp-high` | any array disk over 45 °C for > 10 minutes |
 
 All route to a single `default-webhook` contact point sourcing the URL
 from `$ALERT_WEBHOOK_URL`.
 
 ## Storage layout on Unraid
 
-| Path                                | Volume                       | Why                                              |
-|-------------------------------------|------------------------------|--------------------------------------------------|
-| `/mnt/user/appdata/prometheus/data` | Cache (SSD)                  | TSDB does many small random writes; HDD murders it |
-| `/mnt/user/appdata/grafana`         | Cache (SSD)                  | SQLite + small file writes                       |
-| `/mnt/user/appdata/loki/index`      | Cache (SSD)                  | Index lookups want low latency                   |
-| `/mnt/user/appdata/loki/wal`        | Cache (SSD)                  | Sync writes                                      |
-| `/mnt/user/loki/chunks`             | Array (HDD)                  | Sequential, append-only, large                    |
-| `/mnt/user/loki/compactor`          | Array (HDD)                  | Long-running compaction working dir              |
-| `/mnt/user/appdata/promtail`        | Cache (SSD)                  | positions.yaml (tiny)                            |
+| Path                                | Volume      | Why                                                |
+| ----------------------------------- | ----------- | -------------------------------------------------- |
+| `/mnt/user/appdata/prometheus/data` | Cache (SSD) | TSDB does many small random writes; HDD murders it |
+| `/mnt/user/appdata/grafana`         | Cache (SSD) | SQLite + small file writes                         |
+| `/mnt/user/appdata/loki/index`      | Cache (SSD) | Index lookups want low latency                     |
+| `/mnt/user/appdata/loki/wal`        | Cache (SSD) | Sync writes                                        |
+| `/mnt/user/loki/chunks`             | Array (HDD) | Sequential, append-only, large                     |
+| `/mnt/user/loki/compactor`          | Array (HDD) | Long-running compaction working dir                |
+| `/mnt/user/appdata/promtail`        | Cache (SSD) | positions.yaml (tiny)                              |
 
 Loki retention is 30 days (`retention_period: 720h`); the compactor runs
 inside the same container and enforces it.
