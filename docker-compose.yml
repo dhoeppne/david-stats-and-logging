@@ -20,7 +20,7 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/targets:/etc/prometheus/targets:ro
       - ./prometheus/rules:/etc/prometheus/rules:ro
-      - /mnt/user/appdata/prometheus/data:/prometheus
+      - /mnt/docker/metrics/prometheus_data/data:/prometheus
     ports:
       - "9090:9090"
     networks:
@@ -36,10 +36,10 @@ services:
     command: -config.file=/etc/loki/loki-config.yml
     volumes:
       - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
-      - /mnt/user/appdata/loki/index:/loki/index
-      - /mnt/user/appdata/loki/wal:/loki/wal
-      - /mnt/user/loki/chunks:/loki/chunks
-      - /mnt/user/loki/compactor:/loki/compactor
+      - /mnt/docker/metrics/loki/index:/loki/index
+      - /mnt/docker/metrics/loki/wal:/loki/wal
+      - /mnt/docker/loki/chunks:/loki/chunks
+      - /mnt/docker/loki/compactor:/loki/compactor
     ports:
       - "3100:3100"
     networks:
@@ -61,7 +61,7 @@ services:
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
-      - /mnt/user/appdata/grafana:/var/lib/grafana
+      - /mnt/docker/metrics/grafana_data:/var/lib/grafana
     ports:
       - "3000:3000"
     networks:
@@ -79,7 +79,7 @@ services:
       - ./promtail/nas/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /mnt/user/appdata/promtail:/tmp/promtail
+      - /mnt/docker/metrics/promtail_data:/tmp/promtail
     networks:
       - obs
     depends_on:
