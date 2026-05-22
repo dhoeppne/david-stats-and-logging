@@ -1,0 +1,113 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: uptime
+    folder: Alerts
+    interval: 1m
+    rules:
+
+      - uid: alert-blackbox-probe-failed
+        title: Blackbox probe failed
+        condition: A
+        for: 2m
+        noDataState: NoData
+        execErrState: Error
+        annotations:
+          summary: 'Probe failing: {{ $labels.instance }}'
+          description: 'probe_success == 0 for >2m for {{ $labels.instance }} (job {{ $labels.job }}).'
+        labels:
+          severity: critical
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: probe_success == 0
+              instant: true
+
+      - uid: alert-cert-expiring-soon
+        title: TLS certificate expiring soon
+        condition: A
+        for: 1h
+        noDataState: NoData
+        execErrState: Error
+        annotations:
+          summary: 'Cert <14d on {{ $labels.instance }}'
+          description: 'Certificate for {{ $labels.instance }} expires in less than 14 days.'
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: (probe_ssl_earliest_cert_expiry - time()) < (14 * 24 * 3600)
+              instant: true
+
+      - uid: alert-node-down
+        title: Node exporter down
+        condition: A
+        for: 2m
+        noDataState: NoData
+        execErrState: Error
+        annotations:
+          summary: 'Host {{ $labels.host }} ({{ $labels.instance }}) is unreachable'
+          description: 'up == 0 for >2m on node job for {{ $labels.instance }}.'
+        labels:
+          severity: critical
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: up{job="node"} == 0
+              instant: true
+
+      - uid: alert-disk-usage-high
+        title: Disk usage > 85%
+        condition: A
+        for: 10m
+        noDataState: NoData
+        execErrState: Error
+        annotations:
+          summary: '{{ $labels.host }}:{{ $labels.mountpoint }} over 85% full'
+          description: '{{ humanizePercentage $value }} used on {{ $labels.host }} mount {{ $labels.mountpoint }}.'
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: |
+                (node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"} - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"})
+                / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"} > 0.85
+              instant: true
+
+      - uid: alert-unraid-disk-temp-high
+        title: Unraid disk temperature > 45C
+        condition: A
+        for: 10m
+        noDataState: NoData
+        execErrState: Error
+        annotations:
+          summary: 'Disk {{ $labels.disk }} on NAS is {{ $value }}C'
+          description: 'Unraid array disk temperature exceeded 45C for >10m.'
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              # Metric name comes from the Unraid API plugin. Confirm against
+              # http://nas:9999/metrics after install and adjust if needed
+              # (common alternatives: unraid_disk_temp_celsius, unraid_array_disk_temperature).
+              expr: unraid_disk_temperature_celsius > 45
+              instant: true

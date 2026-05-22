@@ -1,0 +1,11 @@
+groups:
+  - name: recording
+    interval: 30s
+    rules:
+      # Precomputed per-host CPU usage % — used by Node Overview dashboard.
+      - record: instance:node_cpu_utilization:ratio
+        expr: 1 - avg by (host, instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))
+
+      # Precomputed per-host memory used %.
+      - record: instance:node_memory_used:ratio
+        expr: 1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)

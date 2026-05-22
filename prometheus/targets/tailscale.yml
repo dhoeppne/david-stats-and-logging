@@ -1,0 +1,21 @@
+# Tailscale client metrics endpoints.
+# Each tailscaled must be started with `--prom-listen-addr :5252` (Linux: set
+# TS_TAILSCALED_EXTRA_ARGS="--prom-listen-addr :5252" in /etc/default/tailscaled
+# or the systemd drop-in). On Unraid, set the equivalent in the Tailscale
+# plugin's extra args field. Use the Tailscale IP, not the LAN IP.
+
+- targets: ["100.64.0.10:5252"]
+  labels:
+    host: nas
+
+- targets: ["100.64.0.20:5252"]
+  labels:
+    host: npm
+
+- targets: ["100.64.0.11:5252"]
+  labels:
+    host: dns1
+
+- targets: ["100.64.0.12:5252"]
+  labels:
+    host: dns2

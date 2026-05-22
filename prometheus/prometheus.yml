@@ -1,0 +1,99 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    monitor: home-obs
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+scrape_configs:
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: node
+    file_sd_configs:
+      - files: [/etc/prometheus/targets/node.yml]
+
+  - job_name: technitium
+    metrics_path: /metrics
+    file_sd_configs:
+      - files: [/etc/prometheus/targets/technitium.yml]
+
+  - job_name: unraid_api
+    static_configs:
+      - targets: ["192.168.1.10:9999"]
+        labels:
+          host: nas
+    # NOTE: confirm port + path for the installed Unraid API Prometheus plugin
+    # and adjust `targets` and `metrics_path` here.
+
+  - job_name: nginx
+    static_configs:
+      - targets: ["192.168.1.20:9113"]
+        labels:
+          host: npm
+
+  - job_name: tailscale
+    file_sd_configs:
+      - files: [/etc/prometheus/targets/tailscale.yml]
+
+  - job_name: apps
+    file_sd_configs:
+      - files: [/etc/prometheus/targets/apps.yml]
+
+  - job_name: blackbox_http
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://grafana.dbh.fyi
+          - https://prometheus.dbh.fyi
+          - https://davidhoeppner.ca
+          - https://dns1.dbh.fyi
+          - https://dns2.dbh.fyi
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  - job_name: blackbox_dns_internal
+    metrics_path: /probe
+    params:
+      module: [dns_internal]
+    static_configs:
+      - targets:
+          - grafana.dbh.fyi
+          - npm.dbh.fyi
+          - nas.dbh.fyi
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  - job_name: blackbox_dns_public
+    metrics_path: /probe
+    params:
+      module: [dns_public]
+    static_configs:
+      - targets:
+          - dbh.fyi
+          - davidhoeppner.ca
+          - dns1.dbh.fyi
+          - dns2.dbh.fyi
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115

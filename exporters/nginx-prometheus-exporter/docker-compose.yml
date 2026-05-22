@@ -1,0 +1,15 @@
+name: nginx-exporter
+
+# Run this on the NPM box (not the NAS).
+# Requires stub_status.conf to be deployed into NPM's custom nginx config dir.
+# See README in this directory.
+
+services:
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.0
+    container_name: nginx-exporter
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - --nginx.scrape-uri=http://127.0.0.1:8081/stub_status
+      - --web.listen-address=:9113

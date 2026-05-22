@@ -1,0 +1,11 @@
+# Add new self-hosted apps with a /metrics endpoint here.
+# After editing, commit + `git pull` on the NAS, then:
+#   curl -X POST http://localhost:9090/-/reload
+#
+# Example (uncomment and edit):
+# - targets: ["10.0.0.39:8080"]
+#   labels:
+#     app: my-app
+#     host: arcane
+
+[]

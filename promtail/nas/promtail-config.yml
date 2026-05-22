@@ -1,0 +1,58 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/promtail/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    backoff_config:
+      min_period: 500ms
+      max_period: 30s
+      max_retries: 10
+
+scrape_configs:
+
+  # All Docker containers on the Unraid host.
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+    relabel_configs:
+      - source_labels: [__meta_docker_container_name]
+        regex: /(.*)
+        target_label: container
+      - source_labels: [__meta_docker_container_log_stream]
+        target_label: stream
+      - source_labels: [__meta_docker_container_label_com_docker_compose_project]
+        target_label: compose_project
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: compose_service
+      - source_labels: [__meta_docker_container_image]
+        target_label: image
+      - target_label: host
+        replacement: nas
+      - target_label: job
+        replacement: docker
+    pipeline_stages:
+      # Try to extract log level from common JSON-formatted logs.
+      - json:
+          expressions:
+            level: level
+            msg: msg
+      - regex:
+          expression: '(?P<level_text>(?i:debug|info|warn|warning|error|fatal|panic))'
+      - labels:
+          level:
+          level_text:
+
+  # Unraid syslog (if /var/log is bind-mounted; otherwise drop this block).
+  - job_name: unraid_syslog
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: syslog
+          host: nas
+          __path__: /var/log/syslog
