@@ -2,10 +2,16 @@
 
 Install as a binary + systemd unit. No Docker required.
 
+> **Run as root.** Every step here writes to root-owned locations
+> (`/etc/passwd`, `/usr/local/bin`, `/etc/systemd/system`). Either become
+> root once with `sudo -i` and run the commands as written, or prefix each
+> command with `sudo`. If you see `useradd: Permission denied` /
+> `cannot lock /etc/passwd`, that's the symptom — you're not root.
+
 ## 1. Create a system user
 
 ```sh
-useradd --system --no-create-home --shell /usr/sbin/nologin node_exporter
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin node_exporter
 ```
 
 ## 2. Download the binary
@@ -17,13 +23,14 @@ cd /tmp
 curl -L -o ne.tar.gz \
   "https://github.com/prometheus/node_exporter/releases/download/v${NE_VERSION}/node_exporter-${NE_VERSION}.${ARCH}.tar.gz"
 tar -xzf ne.tar.gz
-install -m 0755 node_exporter-${NE_VERSION}.${ARCH}/node_exporter /usr/local/bin/node_exporter
+sudo install -m 0755 node_exporter-${NE_VERSION}.${ARCH}/node_exporter /usr/local/bin/node_exporter
 rm -rf ne.tar.gz node_exporter-${NE_VERSION}.${ARCH}
 ```
 
 ## 3. systemd unit
 
-`/etc/systemd/system/node_exporter.service`:
+Create `/etc/systemd/system/node_exporter.service` (e.g.
+`sudo nano /etc/systemd/system/node_exporter.service`) with:
 
 ```ini
 [Unit]
@@ -48,8 +55,8 @@ WantedBy=multi-user.target
 ## 4. Enable + start
 
 ```sh
-systemctl daemon-reload
-systemctl enable --now node_exporter
+sudo systemctl daemon-reload
+sudo systemctl enable --now node_exporter
 curl -s http://localhost:9100/metrics | head
 ```
 
@@ -57,12 +64,12 @@ curl -s http://localhost:9100/metrics | head
 
 Allow inbound `9100/tcp` from the NAS:
 
-- **NPM box (LAN)**: from `192.168.1.10` (NAS LAN IP).
+- **NPM box (LAN)**: from `10.0.0.17` (NAS LAN IP).
 - **dns1 / dns2 (Hetzner)**: from the NAS's Tailscale IP (e.g. `100.64.0.10/32`).
   If using `ufw`:
 
   ```sh
-  ufw allow from 100.64.0.10 to any port 9100 proto tcp
+  sudo ufw allow from 100.64.0.10 to any port 9100 proto tcp
   ```
 
   Or rely on the Tailscale ACL to gate `:9100`.
@@ -73,13 +80,13 @@ Each host's tailscaled also exposes its own Prometheus metrics. Enable it
 once per host:
 
 ```sh
-mkdir -p /etc/systemd/system/tailscaled.service.d
-cat > /etc/systemd/system/tailscaled.service.d/prometheus.conf <<'EOF'
+sudo mkdir -p /etc/systemd/system/tailscaled.service.d
+sudo tee /etc/systemd/system/tailscaled.service.d/prometheus.conf >/dev/null <<'EOF'
 [Service]
 Environment=TS_TAILSCALED_EXTRA_ARGS=--prom-listen-addr=:5252
 EOF
-systemctl daemon-reload
-systemctl restart tailscaled
+sudo systemctl daemon-reload
+sudo systemctl restart tailscaled
 curl -s http://localhost:5252/metrics | head
 ```
 

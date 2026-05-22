@@ -8,7 +8,6 @@ rule_files:
   - /etc/prometheus/rules/*.yml
 
 scrape_configs:
-
   - job_name: prometheus
     static_configs:
       - targets: ["localhost:9090"]
@@ -24,7 +23,7 @@ scrape_configs:
 
   - job_name: unraid_api
     static_configs:
-      - targets: ["192.168.1.10:9999"]
+      - targets: ["10.0.0.17:9999"]
         labels:
           host: nas
     # NOTE: confirm port + path for the installed Unraid API Prometheus plugin
@@ -32,7 +31,7 @@ scrape_configs:
 
   - job_name: nginx
     static_configs:
-      - targets: ["192.168.1.20:9113"]
+      - targets: ["10.0.0.104:9113"]
         labels:
           host: npm
 

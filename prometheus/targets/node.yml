@@ -1,12 +1,12 @@
 # node_exporter targets. Each entry is one Linux host running node_exporter on :9100.
 # Replace IPs with the actual LAN / Tailscale IPs of each host.
 
-- targets: ["192.168.1.10:9100"]
+- targets: ["10.0.0.17:9100"]
   labels:
     host: nas
     location: home
 
-- targets: ["192.168.1.20:9100"]
+- targets: ["10.0.0.104:9100"]
   labels:
     host: npm
     location: home

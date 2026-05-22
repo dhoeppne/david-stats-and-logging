@@ -20,7 +20,7 @@ repo — the Grafana UI is **not** the source of truth.
                          │
             ┌────────────┴───────────────┐
             │                            │
-   LAN (192.168.1.0/24)         Tailscale (100.64.0.0/10)
+   LAN (10.0.0.0/24)         Tailscale (100.64.0.0/10)
             │                            │
         NPM box                  dns1.dbh.fyi
    ├─ node_exporter:9100        ├─ node_exporter:9100
