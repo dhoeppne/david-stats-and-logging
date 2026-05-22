@@ -8,14 +8,13 @@ positions:
 
 clients:
   # Reach the NAS over Tailscale. Replace with the NAS's Tailscale IP.
-  - url: http://100.64.0.10:3100/loki/api/v1/push
+  - url: http://100.105.48.123:3100/loki/api/v1/push
     backoff_config:
       min_period: 500ms
       max_period: 30s
       max_retries: 10
 
 scrape_configs:
-
   - job_name: journal
     journal:
       max_age: 12h
@@ -24,11 +23,11 @@ scrape_configs:
         job: systemd-journal
         # `host` label is injected by the relabel below.
     relabel_configs:
-      - source_labels: ['__journal__systemd_unit']
+      - source_labels: ["__journal__systemd_unit"]
         target_label: unit
-      - source_labels: ['__journal__hostname']
+      - source_labels: ["__journal__hostname"]
         target_label: host
-      - source_labels: ['__journal_priority_keyword']
+      - source_labels: ["__journal_priority_keyword"]
         target_label: level
 
   # Technitium DNS server logs. Path is the default install location;
@@ -38,13 +37,13 @@ scrape_configs:
       - targets: [localhost]
         labels:
           job: technitium
-          host: REPLACE-WITH-HOSTNAME   # dns1 or dns2
+          host: dsn1.dbh.fyi # dns1 or dns2
           __path__: /etc/dns/logs/*.log
     pipeline_stages:
       - regex:
           expression: '^\[(?P<timestamp>[^\]]+)\]\s+(?:\[(?P<remote>[^\]]+)\]\s+)?(?P<message>.*)$'
       - timestamp:
           source: timestamp
-          format: '2006-01-02 15:04:05'
+          format: "2006-01-02 15:04:05"
       - labels:
           remote:

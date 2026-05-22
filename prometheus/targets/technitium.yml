@@ -3,12 +3,12 @@
 # If your install uses a different port or requires a token query param,
 # edit `__metrics_path__` per-target.
 
-- targets: ["100.64.0.11:5380"]
+- targets: ["100.93.152.51:5380"]
   labels:
     host: dns1
     location: hetzner
 
-- targets: ["100.64.0.12:5380"]
+- targets: ["100.110.60.60:5380"]
   labels:
     host: dns2
     location: hetzner

@@ -69,7 +69,7 @@ Allow inbound `9100/tcp` from the NAS:
   If using `ufw`:
 
   ```sh
-  sudo ufw allow from 100.64.0.10 to any port 9100 proto tcp
+  sudo ufw allow from 100.105.48.123 to any port 9100 proto tcp
   ```
 
   Or rely on the Tailscale ACL to gate `:9100`.

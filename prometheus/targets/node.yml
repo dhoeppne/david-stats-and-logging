@@ -11,12 +11,12 @@
     host: npm
     location: home
 
-- targets: ["100.64.0.11:9100"]
+- targets: ["100.93.152.51:9100"]
   labels:
     host: dns1
     location: hetzner
 
-- targets: ["100.64.0.12:9100"]
+- targets: ["100.110.60.60:9100"]
   labels:
     host: dns2
     location: hetzner
